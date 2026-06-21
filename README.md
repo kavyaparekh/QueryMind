@@ -4,48 +4,40 @@ A natural-language-to-SQL agent with semantic schema retrieval, safety guardrail
 and a self-correction loop. Ask a question in plain English; get back a SQL query,
 the result, and a full reasoning trace.
 
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                              QueryMind                                     │
-│                                                                            │
-│   ┌──────────┐     HTTP      ┌─────────────────────────────────────────┐  │
-│   │          │◀─────────────▶│           Backend  (FastAPI)            │  │
-│   │  React   │               │                                         │  │
-│   │  TypeSc. │               │  ┌───────────────────────────────────┐  │  │
-│   │  Tailwind│               │  │        LangGraph Agent            │  │  │
-│   │          │               │  │                                   │  │  │
-│   │  chat UI │               │  │  planner                          │  │  │
-│   │  + trace │               │  │    ↓                              │  │  │
-│   │   panel  │               │  │  schema_retriever (pgvector k-NN) │  │  │
-│   └──────────┘               │  │    ↓                              │  │  │
-│                               │  │  sql_generator (Claude)          │  │  │
-│                               │  │    ↓                              │  │  │
-│                               │  │  sql_validator (sqlglot)         │  │  │
-│                               │  │    ↓  ↑ retry (max 3)            │  │  │
-│                               │  │  executor (read-only role)       │  │  │
-│                               │  │    ↓                              │  │  │
-│                               │  │  formatter                       │  │  │
-│                               │  └───────────────────────────────────┘  │  │
-│                               └──────────────────┬──────────────────────┘  │
-│                                                  │                         │
-│            ┌─────────────────────────────────────▼───────────────────┐    │
-│            │              PostgreSQL 16 + pgvector                    │    │
-│            │                                                          │    │
-│            │  ┌─────────────────────┐  ┌──────────────────────────┐  │    │
-│            │  │  Chinook Dataset    │  │   schema_embeddings      │  │    │
-│            │  │  (11 tables)        │  │   vector(1024) — voyage-3│  │    │
-│            │  └─────────────────────┘  └──────────────────────────┘  │    │
-│            └──────────────────────────────────────────────────────────┘    │
-│                                                                            │
-│   ┌─────────────────────────┐   ┌───────────────────────────────────────┐ │
-│   │   MCP Server            │   │   Eval Harness                        │ │
-│   │   list_tables           │   │   30 NL/SQL pairs                     │ │
-│   │   get_table_schema      │   │   result-set comparison               │ │
-│   │   search_schema         │   │   accuracy by category                │ │
-│   │   validate_query        │   └───────────────────────────────────────┘ │
-│   │   run_query             │                                              │
-│   └─────────────────────────┘                                              │
-└────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    User(["User"])
+    FE["Frontend\nReact · TypeScript · Tailwind"]
+    BE["Backend\nFastAPI"]
+
+    subgraph Agent ["LangGraph Agent"]
+        direction TB
+        P["planner"]
+        SR["schema_retriever"]
+        SG["sql_generator · Claude"]
+        SV["sql_validator · sqlglot"]
+        EX["executor · read-only role"]
+        FM["formatter"]
+
+        P --> SR --> SG --> SV
+        SV -->|"invalid · retry max 3"| SG
+        SV -->|valid| EX --> FM
+    end
+
+    subgraph DB ["PostgreSQL 16 + pgvector"]
+        CH["Chinook Dataset · 11 tables"]
+        EMB["schema_embeddings · vector(1024)"]
+    end
+
+    MCP["MCP Server\nlist_tables · get_table_schema\nsearch_schema · validate_query · run_query"]
+    EVAL["Eval Harness\n30 NL/SQL pairs · result-set comparison"]
+
+    User -->|HTTP| FE -->|REST| BE --> Agent
+    FM --> BE
+    SR -->|"k-NN search"| EMB
+    EX -->|query| CH
+    MCP --> DB
+    EVAL -->|"POST /chat"| BE
 ```
 
 ## Tech Stack
