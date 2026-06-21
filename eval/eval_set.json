@@ -1,0 +1,12 @@
+[
+  {
+    "_comment": "Phase 4: fill in 30 NL/SQL pairs across the categories below.",
+    "_categories": ["simple_lookup", "join", "aggregation", "multi_table"],
+    "_schema": {
+      "question": "Natural language question",
+      "sql": "Ground-truth SQL (deterministic result set)",
+      "category": "one of the categories above",
+      "notes": "optional"
+    }
+  }
+]
