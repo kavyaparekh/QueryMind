@@ -76,11 +76,27 @@ def _chinook_is_seeded() -> bool:
 
 
 def _fetch_chinook_sql() -> bytes:
+    """Download Chinook SQL and strip the database-creation preamble.
+
+    The official file creates a new 'chinook' database and switches to it
+    with \\c chinook. We strip those lines so the tables land in 'querymind'.
+    """
     print(f"  Downloading Chinook SQL from GitHub...", end=" ", flush=True)
     with urllib.request.urlopen(CHINOOK_SQL_URL, timeout=60) as resp:
-        data = resp.read()
-    print(f"{len(data):,} bytes")
-    return data
+        raw = resp.read().decode("utf-8")
+    print(f"{len(raw):,} bytes")
+
+    # Remove lines that create/drop the chinook DB or switch connection.
+    skip_prefixes = (
+        "DROP DATABASE",
+        "CREATE DATABASE",
+        r"\c ",
+    )
+    cleaned_lines = [
+        line for line in raw.splitlines()
+        if not any(line.strip().startswith(p) for p in skip_prefixes)
+    ]
+    return "\n".join(cleaned_lines).encode("utf-8")
 
 
 def _apply_via_docker_psql(sql: bytes) -> None:
@@ -130,7 +146,7 @@ def _grant_readonly() -> None:
 def _verify() -> int:
     """Return the row count of the Artist table as a smoke-test."""
     with _connect() as conn, conn.cursor() as cur:
-        cur.execute('SELECT COUNT(*) FROM "Artist"')
+        cur.execute('SELECT COUNT(*) FROM artist')
         return cur.fetchone()[0]  # type: ignore[index]
 
 
