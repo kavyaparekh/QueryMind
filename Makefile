@@ -42,5 +42,7 @@ seed: up
 
 # ── Backend ───────────────────────────────────────────────────────────────────
 backend:
-	cd backend && pip install -q -r requirements.txt && \
-		uvicorn app.main:app --reload --host $${BACKEND_HOST:-0.0.0.0} --port $${BACKEND_PORT:-8000}
+	cd backend && PYTHONPATH=. ../.venv/bin/uvicorn app.main:app \
+		--reload \
+		--host $${BACKEND_HOST:-0.0.0.0} \
+		--port $${BACKEND_PORT:-8000}
