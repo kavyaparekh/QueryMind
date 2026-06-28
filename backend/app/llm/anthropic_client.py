@@ -52,17 +52,23 @@ class AnthropicClient(LLMClient):
             )
         return match.group(1).strip()
 
-    def generate_sql(self, question: str, schema: str) -> tuple[str, str]:
+    def generate_sql(
+        self,
+        question: str,
+        schema: str,
+        previous_error: str | None = None,
+    ) -> tuple[str, str]:
+        user_content = f"DATABASE SCHEMA:\n{schema}\n\nQUESTION: {question}"
+        if previous_error:
+            user_content += (
+                f"\n\nPREVIOUS SQL FAILED WITH ERROR:\n{previous_error}"
+                "\n\nPlease fix the SQL and try again."
+            )
         message = self.client.messages.create(
             model=self.model,
             max_tokens=1024,
             system=_SQL_SYSTEM_PROMPT,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"DATABASE SCHEMA:\n{schema}\n\nQUESTION: {question}",
-                }
-            ],
+            messages=[{"role": "user", "content": user_content}],
         )
         response_text = message.content[0].text
         sql = self._parse_tag(response_text, "sql")

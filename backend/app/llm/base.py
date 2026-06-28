@@ -11,12 +11,19 @@ from abc import ABC, abstractmethod
 class LLMClient(ABC):
 
     @abstractmethod
-    def generate_sql(self, question: str, schema: str) -> tuple[str, str]:
+    def generate_sql(
+        self,
+        question: str,
+        schema: str,
+        previous_error: str | None = None,
+    ) -> tuple[str, str]:
         """Generate a SQL query from a natural language question.
 
         Args:
-            question: The user's plain-English question.
-            schema:   Formatted database schema string.
+            question:       The user's plain-English question.
+            schema:         Formatted database schema string.
+            previous_error: If set, the last validation/execution error so
+                            Claude can self-correct on retry.
 
         Returns:
             (sql, reasoning) — the generated SELECT statement and a brief
