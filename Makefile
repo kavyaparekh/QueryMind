@@ -1,4 +1,4 @@
-.PHONY: help up down seed logs psql clean backend
+.PHONY: help up down seed embed logs psql clean backend
 
 # ── Default target ────────────────────────────────────────────────────────────
 help:
@@ -39,6 +39,10 @@ psql:
 # ── Seed ──────────────────────────────────────────────────────────────────────
 seed: up
 	cd db && pip install -q -r requirements.txt && python seed.py
+
+# ── Embed ─────────────────────────────────────────────────────────────────────
+embed: up
+	PYTHONPATH=backend .venv/bin/python backend/scripts/embed_schema.py
 
 # ── Backend ───────────────────────────────────────────────────────────────────
 backend:
