@@ -1,4 +1,4 @@
-.PHONY: help up down seed embed logs psql clean backend
+.PHONY: help up down seed embed logs psql clean backend mcp
 
 # ── Default target ────────────────────────────────────────────────────────────
 help:
@@ -43,6 +43,10 @@ seed: up
 # ── Embed ─────────────────────────────────────────────────────────────────────
 embed: up
 	PYTHONPATH=backend .venv/bin/python backend/scripts/embed_schema.py
+
+# ── MCP Server ────────────────────────────────────────────────────────────────
+mcp: up
+	PYTHONPATH=backend .venv/bin/python -m app.mcp_server
 
 # ── Backend ───────────────────────────────────────────────────────────────────
 backend:
