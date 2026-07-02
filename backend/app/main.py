@@ -1,10 +1,10 @@
 """QueryMind FastAPI application.
 
-Phase 2: LangGraph agent with pgvector schema retrieval + self-correction.
-  POST /chat  →  agent.invoke()  →  return response.
+Phase 4: Guardrails + eval harness.
+  POST /chat  →  guardrail check  →  agent.invoke()  →  return response.
 
 The agent graph lives in app/agent/graph.py.
-Phase 3 will add the MCP server.
+The input guardrail lives in app/guardrails.py.
 """
 
 from __future__ import annotations
@@ -13,12 +13,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.agent.graph import agent
+from app.guardrails import check_question
 from app.models import ChatRequest, ChatResponse
 
 app = FastAPI(
     title="QueryMind",
     description="Natural-language-to-SQL agent with safety guardrails.",
-    version="0.2.0",
+    version="0.4.0",
 )
 
 app.add_middleware(
@@ -35,7 +36,7 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict:
     """Liveness probe."""
-    return {"status": "ok", "phase": 2}
+    return {"status": "ok", "phase": 4}
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -49,6 +50,10 @@ def chat(request: ChatRequest) -> ChatResponse:
     question = request.question.strip()
     if not question:
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
+
+    guard_error = check_question(question)
+    if guard_error:
+        raise HTTPException(status_code=400, detail=guard_error)
 
     try:
         state = agent.invoke({"question": question, "retries": 0, "error": ""})
