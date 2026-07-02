@@ -1,12 +1,152 @@
 [
   {
-    "_comment": "Phase 4: fill in 30 NL/SQL pairs across the categories below.",
-    "_categories": ["simple_lookup", "join", "aggregation", "multi_table"],
-    "_schema": {
-      "question": "Natural language question",
-      "sql": "Ground-truth SQL (deterministic result set)",
-      "category": "one of the categories above",
-      "notes": "optional"
-    }
+    "question": "How many tracks are in the database?",
+    "sql": "SELECT COUNT(*) AS count FROM \"Track\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "What are all the music genres?",
+    "sql": "SELECT \"Name\" FROM \"Genre\" ORDER BY \"Name\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "How many albums are there?",
+    "sql": "SELECT COUNT(*) AS count FROM \"Album\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "What media types are available?",
+    "sql": "SELECT \"Name\" FROM \"MediaType\" ORDER BY \"Name\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "How many customers are there?",
+    "sql": "SELECT COUNT(*) AS count FROM \"Customer\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "List all playlist names",
+    "sql": "SELECT \"Name\" FROM \"Playlist\" ORDER BY \"Name\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "How many employees does the company have?",
+    "sql": "SELECT COUNT(*) AS count FROM \"Employee\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "What is the unit price of the most expensive track?",
+    "sql": "SELECT MAX(\"UnitPrice\") AS max_price FROM \"Track\"",
+    "category": "simple_lookup"
+  },
+  {
+    "question": "Which albums did AC/DC release?",
+    "sql": "SELECT al.\"Title\" FROM \"Album\" al JOIN \"Artist\" ar ON al.\"ArtistId\" = ar.\"ArtistId\" WHERE ar.\"Name\" = 'AC/DC' ORDER BY al.\"Title\"",
+    "category": "join"
+  },
+  {
+    "question": "List all tracks in the Rock genre",
+    "sql": "SELECT t.\"Name\" FROM \"Track\" t JOIN \"Genre\" g ON t.\"GenreId\" = g.\"GenreId\" WHERE g.\"Name\" = 'Rock' ORDER BY t.\"Name\"",
+    "category": "join"
+  },
+  {
+    "question": "What tracks are in the Music playlist?",
+    "sql": "SELECT t.\"Name\" FROM \"Track\" t JOIN \"PlaylistTrack\" pt ON t.\"TrackId\" = pt.\"TrackId\" JOIN \"Playlist\" p ON pt.\"PlaylistId\" = p.\"PlaylistId\" WHERE p.\"Name\" = 'Music' ORDER BY t.\"Name\"",
+    "category": "join"
+  },
+  {
+    "question": "Show each track name with its media type",
+    "sql": "SELECT t.\"Name\" AS track, m.\"Name\" AS media_type FROM \"Track\" t JOIN \"MediaType\" m ON t.\"MediaTypeId\" = m.\"MediaTypeId\" ORDER BY t.\"Name\"",
+    "category": "join"
+  },
+  {
+    "question": "List each customer's first name, last name, and their support representative's last name",
+    "sql": "SELECT c.\"FirstName\", c.\"LastName\", e.\"LastName\" AS rep_last_name FROM \"Customer\" c JOIN \"Employee\" e ON c.\"SupportRepId\" = e.\"EmployeeId\" ORDER BY c.\"LastName\", c.\"FirstName\"",
+    "category": "join"
+  },
+  {
+    "question": "What albums does Metallica have?",
+    "sql": "SELECT al.\"Title\" FROM \"Album\" al JOIN \"Artist\" ar ON al.\"ArtistId\" = ar.\"ArtistId\" WHERE ar.\"Name\" = 'Metallica' ORDER BY al.\"Title\"",
+    "category": "join"
+  },
+  {
+    "question": "Show each track name and the genre it belongs to",
+    "sql": "SELECT t.\"Name\" AS track, g.\"Name\" AS genre FROM \"Track\" t JOIN \"Genre\" g ON t.\"GenreId\" = g.\"GenreId\" ORDER BY t.\"Name\"",
+    "category": "join"
+  },
+  {
+    "question": "How many tracks does each genre have?",
+    "sql": "SELECT g.\"Name\" AS genre, COUNT(*) AS track_count FROM \"Track\" t JOIN \"Genre\" g ON t.\"GenreId\" = g.\"GenreId\" GROUP BY g.\"Name\" ORDER BY track_count DESC, g.\"Name\"",
+    "category": "aggregation"
+  },
+  {
+    "question": "Which artist has the most albums?",
+    "sql": "SELECT ar.\"Name\", COUNT(*) AS album_count FROM \"Album\" al JOIN \"Artist\" ar ON al.\"ArtistId\" = ar.\"ArtistId\" GROUP BY ar.\"ArtistId\", ar.\"Name\" ORDER BY album_count DESC LIMIT 1",
+    "category": "aggregation"
+  },
+  {
+    "question": "What is the average track length in milliseconds?",
+    "sql": "SELECT ROUND(AVG(\"Milliseconds\")) AS avg_ms FROM \"Track\"",
+    "category": "aggregation"
+  },
+  {
+    "question": "How many customers are there per country?",
+    "sql": "SELECT \"Country\", COUNT(*) AS customer_count FROM \"Customer\" GROUP BY \"Country\" ORDER BY customer_count DESC, \"Country\"",
+    "category": "aggregation"
+  },
+  {
+    "question": "What is the total revenue from all invoices?",
+    "sql": "SELECT ROUND(SUM(\"Total\")::numeric, 2) AS total_revenue FROM \"Invoice\"",
+    "category": "aggregation"
+  },
+  {
+    "question": "What is the average invoice total?",
+    "sql": "SELECT ROUND(AVG(\"Total\")::numeric, 2) AS avg_total FROM \"Invoice\"",
+    "category": "aggregation"
+  },
+  {
+    "question": "Which albums have more than 15 tracks? Show album title and track count.",
+    "sql": "SELECT al.\"Title\", COUNT(*) AS track_count FROM \"Track\" t JOIN \"Album\" al ON t.\"AlbumId\" = al.\"AlbumId\" GROUP BY al.\"AlbumId\", al.\"Title\" HAVING COUNT(*) > 15 ORDER BY track_count DESC, al.\"Title\"",
+    "category": "aggregation"
+  },
+  {
+    "question": "How many invoices were issued per billing country?",
+    "sql": "SELECT \"BillingCountry\", COUNT(*) AS invoice_count FROM \"Invoice\" GROUP BY \"BillingCountry\" ORDER BY invoice_count DESC, \"BillingCountry\"",
+    "category": "aggregation"
+  },
+  {
+    "question": "What are the top 5 best-selling tracks by total quantity sold?",
+    "sql": "SELECT t.\"Name\", SUM(il.\"Quantity\") AS total_sold FROM \"InvoiceLine\" il JOIN \"Track\" t ON il.\"TrackId\" = t.\"TrackId\" GROUP BY t.\"TrackId\", t.\"Name\" ORDER BY total_sold DESC, t.\"Name\" LIMIT 5",
+    "category": "multi_table"
+  },
+  {
+    "question": "Which 5 customers have spent the most in total?",
+    "sql": "SELECT c.\"FirstName\", c.\"LastName\", ROUND(SUM(i.\"Total\")::numeric, 2) AS total_spent FROM \"Invoice\" i JOIN \"Customer\" c ON i.\"CustomerId\" = c.\"CustomerId\" GROUP BY c.\"CustomerId\", c.\"FirstName\", c.\"LastName\" ORDER BY total_spent DESC LIMIT 5",
+    "category": "multi_table"
+  },
+  {
+    "question": "What is the total revenue per genre?",
+    "sql": "SELECT g.\"Name\" AS genre, ROUND(SUM(il.\"UnitPrice\" * il.\"Quantity\")::numeric, 2) AS revenue FROM \"InvoiceLine\" il JOIN \"Track\" t ON il.\"TrackId\" = t.\"TrackId\" JOIN \"Genre\" g ON t.\"GenreId\" = g.\"GenreId\" GROUP BY g.\"GenreId\", g.\"Name\" ORDER BY revenue DESC",
+    "category": "multi_table"
+  },
+  {
+    "question": "Which country generates the most invoice revenue?",
+    "sql": "SELECT \"BillingCountry\", ROUND(SUM(\"Total\")::numeric, 2) AS revenue FROM \"Invoice\" GROUP BY \"BillingCountry\" ORDER BY revenue DESC LIMIT 1",
+    "category": "multi_table"
+  },
+  {
+    "question": "What are the top 5 best-selling albums by total tracks sold?",
+    "sql": "SELECT al.\"Title\", SUM(il.\"Quantity\") AS total_sold FROM \"InvoiceLine\" il JOIN \"Track\" t ON il.\"TrackId\" = t.\"TrackId\" JOIN \"Album\" al ON t.\"AlbumId\" = al.\"AlbumId\" GROUP BY al.\"AlbumId\", al.\"Title\" ORDER BY total_sold DESC LIMIT 5",
+    "category": "multi_table"
+  },
+  {
+    "question": "Which employee supports the most customers?",
+    "sql": "SELECT e.\"FirstName\", e.\"LastName\", COUNT(c.\"CustomerId\") AS customer_count FROM \"Employee\" e JOIN \"Customer\" c ON c.\"SupportRepId\" = e.\"EmployeeId\" GROUP BY e.\"EmployeeId\", e.\"FirstName\", e.\"LastName\" ORDER BY customer_count DESC LIMIT 1",
+    "category": "multi_table"
+  },
+  {
+    "question": "What is the total revenue per media type?",
+    "sql": "SELECT m.\"Name\" AS media_type, ROUND(SUM(il.\"UnitPrice\" * il.\"Quantity\")::numeric, 2) AS revenue FROM \"InvoiceLine\" il JOIN \"Track\" t ON il.\"TrackId\" = t.\"TrackId\" JOIN \"MediaType\" m ON t.\"MediaTypeId\" = m.\"MediaTypeId\" GROUP BY m.\"MediaTypeId\", m.\"Name\" ORDER BY revenue DESC",
+    "category": "multi_table"
   }
 ]

@@ -1,4 +1,4 @@
-.PHONY: help up down seed embed logs psql clean backend mcp
+.PHONY: help up down seed embed logs psql clean backend mcp eval
 
 # ── Default target ────────────────────────────────────────────────────────────
 help:
@@ -47,6 +47,10 @@ embed: up
 # ── MCP Server ────────────────────────────────────────────────────────────────
 mcp: up
 	PYTHONPATH=backend .venv/bin/python -m app.mcp_server
+
+# ── Eval ──────────────────────────────────────────────────────────────────────
+eval: up
+	cd eval && pip install -q -r requirements.txt && python run_eval.py
 
 # ── Backend ───────────────────────────────────────────────────────────────────
 backend:
