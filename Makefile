@@ -1,4 +1,4 @@
-.PHONY: help up down seed embed logs psql clean backend mcp eval
+.PHONY: help up down seed embed logs psql clean backend mcp eval frontend
 
 # ── Default target ────────────────────────────────────────────────────────────
 help:
@@ -51,6 +51,10 @@ mcp: up
 # ── Eval ──────────────────────────────────────────────────────────────────────
 eval: up
 	cd eval && pip install -q -r requirements.txt && python run_eval.py
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+frontend:
+	cd frontend && npm install && npm run dev
 
 # ── Backend ───────────────────────────────────────────────────────────────────
 backend:
