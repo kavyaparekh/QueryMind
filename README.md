@@ -169,13 +169,3 @@ Plus `schema_embeddings` (added by QueryMind for semantic retrieval).
 | Executor | Statement timeout + row limit enforced at connection level |
 | Logging | Every query attempt logged, including blocked ones |
 
-## Build Phases
-
-| Phase | Status | Scope |
-|---|---|---|
-| **0** | ✅ Done | Project scaffold, Docker, Chinook seed, read-only role |
-| **1** | 🔲 Next | `POST /chat` — single-pass pipeline (full schema dump → Claude → SQL → answer) |
-| **2** | 🔲 | LangGraph agent: planner → schema_retriever → sql_generator → validator → executor → formatter; self-correction loop (max 3 retries) |
-| **3** | 🔲 | MCP server — 5 tools exposed via Python MCP SDK |
-| **4** | 🔲 | Guardrails + eval harness (30 test cases, result-set comparison) |
-| **5** | 🔲 | React frontend — chat UI + expandable agent trace panel |
